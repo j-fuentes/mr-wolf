@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -11,20 +12,36 @@ import (
 
 	"github.com/j-fuentes/mr-wolf/internal/config"
 	"github.com/j-fuentes/mr-wolf/pkg/auth"
+	"github.com/j-fuentes/mr-wolf/pkg/version"
 	tb "gopkg.in/tucnak/telebot.v2"
 )
 
 func main() {
-	token, err := readAPIToken()
+	versionFlag := flag.Bool("version", false, "Show version.")
+	apiTokenPathFlag := flag.String("api-token-path", "./.api_token", "Path to a file containing API token.")
+	configFilePathFlag := flag.String("config-path", "./config.yaml", "Path to a file containing the configuration.")
+
+	flag.Parse()
+
+	if *versionFlag {
+		fmt.Println(version.VersionText())
+		return
+	}
+
+	token, err := readAPIToken(expandPath(*apiTokenPathFlag))
 	if err != nil {
 		log.Fatalf("Error reading API token: %+v", err)
 	}
 
-	cfg, err := config.Read(expandPath("./config.yaml"))
+	cfg, err := config.Read(expandPath(*configFilePathFlag))
 	if err != nil {
 		log.Fatalf("Error reading config file: %+v", err)
 	}
 
+	serve(token, cfg)
+}
+
+func serve(token string, cfg *config.Config) {
 	a, err := auth.NewAuth(cfg.AllowedUsers)
 	if err != nil {
 		log.Fatalf("Error creating auth: %+v", err)
@@ -74,8 +91,8 @@ func authorizedOnly(a *auth.Auth, bot *tb.Bot, fn handler) func(m *tb.Message) {
 	}
 }
 
-func readAPIToken() (string, error) {
-	dat, err := ioutil.ReadFile(expandPath("./.api_token"))
+func readAPIToken(path string) (string, error) {
+	dat, err := ioutil.ReadFile(path)
 	if err != nil {
 		return "", nil
 	}
