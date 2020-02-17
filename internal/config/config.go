@@ -9,6 +9,7 @@ import (
 // Config contains the configuration of the bot.
 type Config struct {
 	AllowedUsers []int `yaml:"allowed-users"`
+	AdminID      int   `yaml:"admin-id"`
 }
 
 // Read reads the configuration from a file.

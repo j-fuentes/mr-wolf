@@ -10,13 +10,16 @@ import (
 type Auth struct {
 	// whitelist is a list of allowed user IDs.
 	whitelist []int
+	// admin is the ID of the admin user.
+	admin int
 }
 
 // NewAuth creates a new Auth.
-func NewAuth(whitelist []int) (*Auth, error) {
+func NewAuth(whitelist []int, admin int) (*Auth, error) {
 	if len(whitelist) > 0 {
 		return &Auth{
 			whitelist: whitelist,
+			admin:     admin,
 		}, nil
 	}
 
@@ -32,4 +35,11 @@ func (a *Auth) UserAllowed(user *tb.User) bool {
 	}
 
 	return false
+}
+
+// AdminUser returns the admin user.
+func (a *Auth) AdminUser() *tb.User {
+	return &tb.User{
+		ID: a.admin,
+	}
 }

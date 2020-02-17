@@ -42,7 +42,7 @@ func main() {
 }
 
 func serve(token string, cfg *config.Config) {
-	a, err := auth.NewAuth(cfg.AllowedUsers)
+	a, err := auth.NewAuth(cfg.AllowedUsers, cfg.AdminID)
 	if err != nil {
 		log.Fatalf("Error creating auth: %+v", err)
 	}
@@ -92,6 +92,7 @@ func authorizedOnly(a *auth.Auth, bot *tb.Bot, fn handler) func(m *tb.Message) {
 			fn(bot, m)
 		} else {
 			log.Printf(msg, m.Text, m.Sender.ID, false)
+			bot.Send(a.AdminUser(), fmt.Sprintf("User %d (%v) tried to access, but access was denied.", m.Sender.ID, m.Sender))
 			denyHandler(bot, m)
 		}
 	}
