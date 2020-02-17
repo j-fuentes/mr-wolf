@@ -1,15 +1,11 @@
 package version
 
-import (
-	"fmt"
-
-	"github.com/jetstack/preflight/pkg/version"
-)
+import "fmt"
 
 // Injected at build time.
 
 // Commit is the commit hash of the build.
-var Commit string
+var Commit = "devel"
 
 // BuildDate is the date it was built.
 var BuildDate string
@@ -22,5 +18,5 @@ var Platform string
 
 // VersionText returns a message with the version.
 func VersionText() string {
-	return fmt.Sprintf("Commit: %s\nBuilt: %s\nGo: %s\nPlatform: %s", version.Commit, version.BuildDate, version.GoVersion, version.Platform)
+	return fmt.Sprintf("Commit: %s\nBuilt: %s\nGo: %s\nPlatform: %s", Commit, BuildDate, GoVersion, Platform)
 }

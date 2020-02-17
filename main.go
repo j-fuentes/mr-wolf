@@ -55,14 +55,16 @@ func serve(token string, cfg *config.Config) {
 		log.Fatalf("Cannot start Telegram bot: %+v", err)
 	}
 
-	commands := []string{"/hello", "/help"}
+	commands := []string{"/help", "/hello", "/version"}
 
-	// hello
-	bot.Handle(commands[0], authorizedOnly(a, bot, hello))
 	// help
-	bot.Handle(commands[1], authorizedOnly(a, bot, func(bot *tb.Bot, m *tb.Message) {
+	bot.Handle(commands[0], authorizedOnly(a, bot, func(bot *tb.Bot, m *tb.Message) {
 		bot.Send(m.Sender, fmt.Sprintf("This is the list of available commands:\n%s", strings.Join(commands, "\n")))
 	}))
+	// hello
+	bot.Handle(commands[1], authorizedOnly(a, bot, helloHandler))
+	// version
+	bot.Handle(commands[2], authorizedOnly(a, bot, versionHandler))
 
 	log.Println("Starting bot...")
 	bot.Start()
@@ -70,11 +72,15 @@ func serve(token string, cfg *config.Config) {
 
 type handler func(bot *tb.Bot, m *tb.Message)
 
-func hello(bot *tb.Bot, m *tb.Message) {
+func helloHandler(bot *tb.Bot, m *tb.Message) {
 	bot.Send(m.Sender, fmt.Sprintf("hello Mr %s", m.Sender.FirstName))
 }
 
-func deny(bot *tb.Bot, m *tb.Message) {
+func versionHandler(bot *tb.Bot, m *tb.Message) {
+	bot.Send(m.Sender, version.VersionText())
+}
+
+func denyHandler(bot *tb.Bot, m *tb.Message) {
 	bot.Send(m.Sender, "you are not welcomed here")
 }
 
@@ -86,7 +92,7 @@ func authorizedOnly(a *auth.Auth, bot *tb.Bot, fn handler) func(m *tb.Message) {
 			fn(bot, m)
 		} else {
 			log.Printf(msg, m.Text, m.Sender.ID, false)
-			deny(bot, m)
+			denyHandler(bot, m)
 		}
 	}
 }
